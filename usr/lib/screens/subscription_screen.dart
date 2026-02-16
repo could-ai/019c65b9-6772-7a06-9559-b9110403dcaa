@@ -1,7 +1,15 @@
 import 'package:flutter/material.dart';
 
-class SubscriptionScreen extends StatelessWidget {
+class SubscriptionScreen extends StatefulWidget {
   const SubscriptionScreen({super.key});
+
+  @override
+  State<SubscriptionScreen> createState() => _SubscriptionScreenState();
+}
+
+class _SubscriptionScreenState extends State<SubscriptionScreen> {
+  String _selectedPlan = 'Professionnel';
+  bool _autoRenewal = true;
 
   @override
   Widget build(BuildContext context) {
@@ -12,7 +20,7 @@ class SubscriptionScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildCurrentPlanCard(context),
+            _buildCurrentPlanCard(),
             const SizedBox(height: 24),
             const Text(
               'Plans Disponibles',
@@ -43,15 +51,21 @@ class SubscriptionScreen extends StatelessWidget {
               features: ['Comptes Illimités', 'Stratégies Custom', 'API Access', 'Manager Dédié'],
               isCurrent: false,
             ),
+            const SizedBox(height: 16),
+            _buildLifetimePlanCard(),
+            const SizedBox(height: 24),
+            _buildAutoRenewalSection(),
             const SizedBox(height: 24),
             _buildSecuritySection(),
+            const SizedBox(height: 24),
+            _buildSupportSection(),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildCurrentPlanCard(BuildContext context) {
+  Widget _buildCurrentPlanCard() {
     return Card(
       color: Theme.of(context).primaryColor.withOpacity(0.1),
       shape: RoundedRectangleBorder(
@@ -79,7 +93,7 @@ class SubscriptionScreen extends StatelessWidget {
               style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 10),
-            const Text('Expire le: 15 Octobre 2023'),
+            const Text('Expire le: 15 Octobre 2024'),
             const SizedBox(height: 20),
             LinearProgressIndicator(
               value: 0.7,
@@ -132,7 +146,7 @@ class SubscriptionScreen extends StatelessWidget {
                   width: double.infinity,
                   child: isCurrent
                       ? OutlinedButton(onPressed: () {}, child: const Text('Gérer'))
-                      : ElevatedButton(onPressed: () {}, child: const Text('Choisir ce plan')),
+                      : ElevatedButton(onPressed: () => _changePlan(title), child: const Text('Choisir ce plan')),
                 ),
               ],
             ),
@@ -161,31 +175,185 @@ class SubscriptionScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSecuritySection() {
-    return const Card(
+  Widget _buildLifetimePlanCard() {
+    return Card(
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.amber.shade100, Colors.amber.shade50],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('Licence à Vie', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                  const Text('499€ une fois', style: TextStyle(fontSize: 18, color: Colors.amber, fontWeight: FontWeight.bold)),
+                ],
+              ),
+              const Divider(height: 30),
+              _buildLifetimeFeature('Accès perpétuel'),
+              _buildLifetimeFeature('Mises à jour gratuites à vie'),
+              _buildLifetimeFeature('Support prioritaire permanent'),
+              _buildLifetimeFeature('Toutes les stratégies futures'),
+              _buildLifetimeFeature('Économie de 60% vs abonnement annuel'),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => _changePlan('Licence à Vie'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.amber,
+                    foregroundColor: Colors.black,
+                  ),
+                  child: const Text('Obtenir la Licence à Vie'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLifetimeFeature(String feature) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8.0),
+      child: Row(
+        children: [
+          const Icon(Icons.star, size: 18, color: Colors.amber),
+          const SizedBox(width: 10),
+          Text(feature),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAutoRenewalSection() {
+    return Card(
       child: Padding(
-        padding: EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Sécurité & Appareils', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            SizedBox(height: 16),
-            ListTile(
-              leading: Icon(Icons.computer),
-              title: Text('Windows PC - MT5'),
-              subtitle: Text('Dernière connexion: Aujourd\'hui 10:30'),
-              trailing: Icon(Icons.check_circle, color: Colors.green),
+            const Text('Renouvellement Automatique', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 16),
+            SwitchListTile(
+              title: const Text('Renouveler automatiquement'),
+              subtitle: const Text('Éviter les interruptions de service'),
+              value: _autoRenewal,
+              onChanged: (val) => setState(() => _autoRenewal = val),
             ),
-            Divider(),
-            ListTile(
-              leading: Icon(Icons.laptop_mac),
-              title: Text('MacBook Pro - Web'),
-              subtitle: Text('Session actuelle'),
-              trailing: Icon(Icons.check_circle, color: Colors.green),
+            const Text(
+              'Votre carte de crédit sera débitée automatiquement à la date d\'expiration.',
+              style: TextStyle(color: Colors.grey, fontSize: 12),
             ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildSecuritySection() {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Sécurité & Appareils', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 16),
+            ListTile(
+              leading: const Icon(Icons.computer),
+              title: const Text('Windows PC - MT5'),
+              subtitle: const Text('Dernière connexion: Aujourd\'hui 10:30 • IP: 192.168.1.100'),
+              trailing: const Icon(Icons.check_circle, color: Colors.green),
+            ),
+            const Divider(),
+            ListTile(
+              leading: const Icon(Icons.laptop_mac),
+              title: const Text('MacBook Pro - Web'),
+              subtitle: const Text('Session actuelle • IP: 192.168.1.101'),
+              trailing: const Icon(Icons.check_circle, color: Colors.green),
+            ),
+            const Divider(),
+            ListTile(
+              leading: const Icon(Icons.smartphone),
+              title: const Text('iPhone 13 - Mobile'),
+              subtitle: const Text('Dernière connexion: Hier 18:45'),
+              trailing: const Icon(Icons.check_circle, color: Colors.grey),
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: () {},
+                icon: const Icon(Icons.logout),
+                label: const Text('Déconnecter tous les appareils'),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSupportSection() {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Support & Ressources', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 16),
+            ListTile(
+              leading: const Icon(Icons.book),
+              title: const Text('Guide Utilisateur'),
+              subtitle: const Text('Documentation complète'),
+              trailing: const Icon(Icons.open_in_new),
+              onTap: () {},
+            ),
+            ListTile(
+              leading: const Icon(Icons.video_library),
+              title: const Text('Tutoriels Vidéo'),
+              subtitle: const Text('Vidéos d\'installation et configuration'),
+              trailing: const Icon(Icons.play_arrow),
+              onTap: () {},
+            ),
+            ListTile(
+              leading: const Icon(Icons.question_answer),
+              title: const Text('FAQ'),
+              subtitle: const Text('Questions fréquemment posées'),
+              trailing: const Icon(Icons.help),
+              onTap: () {},
+            ),
+            ListTile(
+              leading: const Icon(Icons.support),
+              title: const Text('Support Ticket'),
+              subtitle: const Text('Créer un ticket de support'),
+              trailing: const Icon(Icons.add),
+              onTap: () {},
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _changePlan(String planName) {
+    setState(() {
+      _selectedPlan = planName;
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Changement vers le plan $planName initié')),
     );
   }
 }
